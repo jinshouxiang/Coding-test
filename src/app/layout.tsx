@@ -1,5 +1,12 @@
 import "../../styles/globals.css";
 import Link from "next/link";
+import type { Metadata } from "next";
+import Header from "@/components/Header";
+
+export const metadata: Metadata = {
+  title: "Media Site",
+  description: "microCMS + Next.js + Firebase",
+};
 
 export default function RootLayout({
   children,
@@ -9,22 +16,11 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="min-h-dvh bg-white text-gray-900">
-        <header className="border-b">
-          <div className="mx-auto max-w-5xl p-4 flex items-center justify-between">
-            <Link href="/" className="font-bold">
-              Media Site
-            </Link>
-            <nav className="flex gap-4 text-sm">
-              <Link href="/articles" className="hover:underline">
-                Articles
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <Header />
         <main>{children}</main>
         <footer className="mt-12 border-t">
           <div className="mx-auto max-w-5xl p-4 text-sm text-gray-500">
-            © {new Date().getFullYear()}
+            ©2025
           </div>
         </footer>
       </body>

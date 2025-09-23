@@ -1,6 +1,9 @@
 import { client } from "@/lib/microcms";
 import Image from "next/image";
 import Link from "next/link";
+import CommentForm from "@/components/CommentForm";
+import CommentList from "@/components/CommentList";
+import LikeButton from "@/components/LikeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +59,11 @@ export default async function ArticleDetail({
         />
       )}
 
+      {/* いいねボタン */}
+      <div className="mt-4">
+        <LikeButton articleId={id} />
+      </div>
+
       {/* 記事一覧に戻る */}
       <div className="mt-12 flex justify-center">
         <Link
@@ -65,6 +73,12 @@ export default async function ArticleDetail({
           一覧に戻る
         </Link>
       </div>
+
+      {/* コメント投稿フォーム（ログイン済みのみ表示） */}
+      <CommentForm articleId={id} />
+
+      {/* コメント一覧 */}
+      <CommentList articleId={id} />
     </main>
   );
 }

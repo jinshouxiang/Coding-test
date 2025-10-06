@@ -70,7 +70,10 @@ export default function LikeButton({ articleId }: Props) {
       if (liked) {
         await deleteDoc(likeRef);
       } else {
-        await setDoc(likeRef, { createdAt: serverTimestamp() });
+        await setDoc(likeRef, {
+          userId: userId,
+          createdAt: serverTimestamp(),
+        });
       }
     } catch (e) {
       console.error(e);

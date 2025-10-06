@@ -50,6 +50,7 @@ export default function CommentForm({ articleId }: { articleId: string }) {
         onChange={(e) => setText(e.target.value)}
         placeholder="コメントを入力..."
         className="w-full rounded border p-2"
+        name="comment"
       />
       <button
         onClick={handleSubmit}

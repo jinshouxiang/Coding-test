@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -148,9 +149,11 @@ export default function LoginPage() {
         >
           {mode === "signin" ? "新規登録はこちら" : "ログインに切り替える"}
         </button>
-        <button onClick={onReset} className="underline">
-          パスワードをお忘れですか？
-        </button>
+        <div className="flex items-center justify-between text-sm">
+          <Link href="/reset-password" className="underline cursor-pointer">
+            パスワードをお忘れですか？
+          </Link>
+        </div>
       </div>
     </div>
   );

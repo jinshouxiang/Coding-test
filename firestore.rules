@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== likes（どの階層の likes でもマッチ）=====
+    match /{path=**}/likes/{uid} {
+      // 読み取りは誰でもOK（一覧や件数の取得用）
+      allow read: if true;
+
+      // 作成：認証済み & 自分のUIDのドキュメント & 保存データのuserIdも自分
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.userId == request.auth.uid;
+
+      // 削除：自分のUIDのドキュメントのみ
+      allow delete: if request.auth != null
+                    && request.auth.uid == uid;
+
+      // 更新は使わない
+      allow update: if false;
+    }
+
+    // ===== comments（どの階層の comments でもマッチ）=====
+    match /{path=**}/comments/{commentId} {
+      // 読み取りは誰でもOK
+      allow read: if true;
+
+      // 作成：認証済み & 保存データのuserIdが自分
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // 削除：自分のコメントのみ
+      allow delete: if request.auth != null
+                    && request.auth.uid == resource.data.userId;
+
+      allow update: if false;
+    }
+  }
+}

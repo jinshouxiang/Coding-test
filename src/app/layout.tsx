@@ -1,7 +1,7 @@
 import "../../styles/globals.css";
-import Link from "next/link";
 import type { Metadata } from "next";
 import Header from "@/components/Header";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Media Site",
@@ -17,7 +17,15 @@ export default function RootLayout({
     <html lang="ja">
       <body className="min-h-dvh bg-white text-gray-900">
         <Header />
-        <main>{children}</main>
+        <main>
+          {children}
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 2500,
+            }}
+          />
+        </main>
         <footer className="mt-12 border-t">
           <div className="mx-auto max-w-5xl p-4 text-sm text-gray-500">
             ©2025

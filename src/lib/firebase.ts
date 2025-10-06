@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { browserLocalPersistence, setPersistence } from "firebase/auth";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -22,3 +23,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+if (typeof window !== "undefined") {
+  auth.languageCode = "ja";
+  // ついでにログイン保持（任意）
+  setPersistence(auth, browserLocalPersistence);
+}
+
+if (
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "1"
+) {
+  // デフォルトポート: Auth 9099 / Firestore 8080
+  try {
+    connectAuthEmulator(auth, "http://localhost:9099", {
+      disableWarnings: true,
+    });
+  } catch {}
+  try {
+    connectFirestoreEmulator(db, "localhost", 8080);
+  } catch {}
+}

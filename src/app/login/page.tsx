@@ -6,13 +6,18 @@ import { useRouter } from "next/navigation";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
   onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-function errMsg(e: any, mode: "signin" | "signup") {
-  const code = e?.code || "";
+// Firebase のエラー判定用
+type AuthMode = "signin" | "signup";
+function isFirebaseError(e: unknown): e is { code?: string; message?: string } {
+  return typeof e === "object" && e !== null && ("code" in e || "message" in e);
+}
+
+function errMsg(e: unknown, mode: AuthMode) {
+  const code = isFirebaseError(e) ? e.code ?? "" : "";
 
   // 共通
   const common: Record<string, string> = {
@@ -23,7 +28,7 @@ function errMsg(e: any, mode: "signin" | "signup") {
     "auth/network-request-failed": "ネットワークエラーが発生しました",
   };
 
-  // ログイン時
+  // ログイン時のみ
   const signInOnly: Record<string, string> = {
     "auth/user-not-found": "メールアドレスまたはパスワードが正しくありません",
     "auth/wrong-password": "メールアドレスまたはパスワードが正しくありません",
@@ -31,7 +36,7 @@ function errMsg(e: any, mode: "signin" | "signup") {
       "メールアドレスまたはパスワードが正しくありません",
   };
 
-  // 新規登録時
+  // 新規登録時のみ
   const signUpOnly: Record<string, string> = {
     "auth/email-already-in-use": "このメールは既に使われています",
     "auth/weak-password": "パスワードは6文字以上にしてください",
@@ -43,12 +48,14 @@ function errMsg(e: any, mode: "signin" | "signup") {
     ...(mode === "signin" ? signInOnly : signUpOnly),
   };
 
-  return tbl[code] ?? `エラーが発生しました (${code || e?.message})`;
+  const fallback =
+    (isFirebaseError(e) && (e.code || e.message)) || "unknown-error";
+  return tbl[code] ?? `エラーが発生しました (${fallback})`;
 }
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -82,24 +89,7 @@ export default function LoginPage() {
       } else {
         await createUserWithEmailAndPassword(auth, email.trim(), password);
       }
-    } catch (e: any) {
-      setError(errMsg(e, mode));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // パスワード再設定
-  const onReset = async () => {
-    setError("");
-    if (!email) return setError("パスワード再設定にはメールを入力してください");
-    setBusy(true);
-    try {
-      await sendPasswordResetEmail(auth, email);
-      alert(
-        "パスワード再設定用のメールを送信しました。メールをご確認ください。"
-      );
-    } catch (e: any) {
+    } catch (e: unknown) {
       setError(errMsg(e, mode));
     } finally {
       setBusy(false);

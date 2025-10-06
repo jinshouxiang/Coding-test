@@ -13,8 +13,16 @@ type Article = {
   publishedAt?: string;
 };
 
+// microCMSのリストレスポンス
+type ListResponse<T> = {
+  contents: T[];
+  totalCount: number;
+  offset: number;
+  limit: number;
+};
+
 export default function LikesPage() {
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [uid, setUid] = useState<string | null>(null);
 
   // ログイン状態を監視
@@ -37,11 +45,20 @@ export default function LikesPage() {
         if (articleId) ids.add(articleId);
       });
 
+      if (ids.size === 0) {
+        setArticles([]);
+        return;
+      }
+
       // microCMS API で記事をまとめて取得
       const res = await fetch(
         `/api/articles/byIds?ids=${Array.from(ids).join(",")}`
       );
-      const data = await res.json();
+      if (!res.ok) {
+        setArticles([]);
+        return;
+      }
+      const data: ListResponse<Article> = await res.json(); // ← 型を付ける
       setArticles(data.contents ?? []);
     })();
   }, [uid]);

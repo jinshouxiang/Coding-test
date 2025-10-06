@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  DocumentData,
+} from "firebase/firestore";
 
 type Comment = {
   id: string;
@@ -19,13 +25,20 @@ export default function CommentList({ articleId }: { articleId: string }) {
       collection(db, "articles", articleId, "comments"),
       orderBy("createdAt", "desc")
     );
+
     const unsub = onSnapshot(q, (snap) => {
-      const list: Comment[] = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as any),
-      }));
+      const list: Comment[] = snap.docs.map((doc) => {
+        const data = doc.data() as DocumentData;
+        return {
+          id: doc.id,
+          text: data.text ?? "",
+          userEmail: data.userEmail ?? "",
+          createdAt: data.createdAt,
+        };
+      });
       setComments(list);
     });
+
     return () => unsub();
   }, [articleId]);
 

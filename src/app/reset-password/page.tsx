@@ -15,6 +15,10 @@ function resetErrMsg(code?: string) {
   return map[code ?? ""] ?? `エラーが発生しました (${code})`;
 }
 
+function isFirebaseError(e: unknown): e is { code?: string } {
+  return typeof e === "object" && e !== null && "code" in e;
+}
+
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,8 +31,9 @@ export default function ResetPasswordPage() {
     try {
       await sendPasswordResetEmail(auth, email.trim());
       setMsg("再設定用メールを送信しました。メールをご確認ください。");
-    } catch (e: any) {
-      setMsg(resetErrMsg(e?.code));
+    } catch (e: unknown) {
+      const code = isFirebaseError(e) ? e.code : "unknown-error";
+      setMsg(resetErrMsg(code));
     } finally {
       setBusy(false);
     }

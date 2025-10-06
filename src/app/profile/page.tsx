@@ -6,6 +6,10 @@ import { onAuthStateChanged, updateProfile, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import Link from "next/link";
 
+function isFirebaseError(e: unknown): e is { code?: string; message?: string } {
+  return typeof e === "object" && e !== null && ("code" in e || "message" in e);
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -32,19 +36,19 @@ export default function ProfilePage() {
     setMsg("");
     try {
       const trimmed = (displayName ?? "").trim();
-
       // 空にしたい時は空文字で上書き
       await updateProfile(user, { displayName: trimmed === "" ? "" : trimmed });
       setMsg("保存しました");
-    } catch (e: any) {
-      setMsg(`保存に失敗しました: ${e?.code || e?.message}`);
+    } catch (e: unknown) {
+      const detail = isFirebaseError(e) ? e.code || e.message : "unknown-error";
+      setMsg(`保存に失敗しました: ${detail}`);
     } finally {
       setSaving(false);
     }
   };
 
   if (!user) {
-    // onAuthStateChanged で判定中
+    // onAuthStateChanged 判定中
     return <div className="mx-auto mt-16 max-w-md p-6">読み込み中...</div>;
   }
 

@@ -13,9 +13,17 @@ type Article = {
   publishedAt?: string;
 };
 
+// microCMSのリストレスポンス型（最小限）
+type ListResponse<T> = {
+  contents: T[];
+  totalCount: number;
+  offset: number;
+  limit: number;
+};
+
 export default function MyCommentsPage() {
   const [uid, setUid] = useState<string | null>(null);
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Auth 監視
@@ -57,8 +65,12 @@ export default function MyCommentsPage() {
       const res = await fetch(
         `/api/articles/byIds?ids=${Array.from(ids).join(",")}`
       );
-      const data = await res.json();
-
+      if (!res.ok) {
+        setArticles([]);
+        setLoading(false);
+        return;
+      }
+      const data: ListResponse<Article> = await res.json(); // ← 型を付ける
       setArticles(data.contents ?? []);
       setLoading(false);
     })();

@@ -5,21 +5,7 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collectionGroup, getDocs, query, where } from "firebase/firestore";
 import ArticleCard from "@/components/ArticleCard";
-
-type Article = {
-  id: string;
-  title: string;
-  description?: string;
-  publishedAt?: string;
-};
-
-// microCMSのリストレスポンス
-type ListResponse<T> = {
-  contents: T[];
-  totalCount: number;
-  offset: number;
-  limit: number;
-};
+import { Article, ListResponse } from "@/types";
 
 export default function LikesPage() {
   const [articles, setArticles] = useState<Article[]>([]);

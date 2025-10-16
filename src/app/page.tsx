@@ -3,8 +3,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { client } from "@/lib/microcms";
 export const dynamic = "force-dynamic";
 
-// microCMS の記事型
-// TODO:あとで src/types にまとめる
+//TODO microCMS の記事型（src/types にまとめる）
 type MicroCMSImage = { url: string; width?: number; height?: number };
 type MCMSArticle = {
   id: string;

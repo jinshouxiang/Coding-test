@@ -1,46 +1,55 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { browserLocalPersistence, setPersistence } from "firebase/auth";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import type { Auth } from "firebase/auth";
+import type { Firestore } from "firebase/firestore";
+import {
+  getAuth,
+  browserLocalPersistence,
+  setPersistence,
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// App Hosting では FIREBASE_WEBAPP_CONFIG を JSON で注入できる
+function getFirebaseConfig() {
+  const injected = process.env.FIREBASE_WEBAPP_CONFIG
+    ? JSON.parse(process.env.FIREBASE_WEBAPP_CONFIG)
+    : null;
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-if (typeof window !== "undefined") {
-  auth.languageCode = "ja";
-  // ついでにログイン保持（任意）
-  setPersistence(auth, browserLocalPersistence);
+  return {
+    apiKey: injected?.apiKey ?? process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain:
+      injected?.authDomain ?? process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId:
+      injected?.projectId ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket:
+      injected?.storageBucket ??
+      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId:
+      injected?.messagingSenderId ??
+      process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: injected?.appId ?? process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId:
+      injected?.measurementId ??
+      process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  };
 }
 
-if (
-  typeof window !== "undefined" &&
-  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "1"
-) {
-  // デフォルトポート: Auth 9099 / Firestore 8080
-  try {
-    connectAuthEmulator(auth, "http://localhost:9099", {
-      disableWarnings: true,
-    });
-  } catch {}
-  try {
-    connectFirestoreEmulator(db, "localhost", 8080);
-  } catch {}
+const firebaseConfig = getFirebaseConfig();
+
+// アプリは作ってOK（これはサーバでも問題ない）
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// ★ ここが重要：サーバでは Auth/Firestore を“作らない”
+//   型は満たしつつ、実体はブラウザでだけ初期化する
+export const auth: Auth =
+  typeof window !== "undefined" ? getAuth(app) : (undefined as unknown as Auth);
+
+export const db: Firestore =
+  typeof window !== "undefined"
+    ? getFirestore(app)
+    : (undefined as unknown as Firestore);
+
+// ブラウザ時のみ副作用
+if (typeof window !== "undefined") {
+  auth.languageCode = "ja";
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
 }

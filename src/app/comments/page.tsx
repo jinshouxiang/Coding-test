@@ -1,80 +1,61 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { collectionGroup, getDocs, query, where } from "firebase/firestore";
 import ArticleCard from "@/components/ArticleCard";
+import { Article } from "@/types";
 
-type Article = {
-  id: string;
-  title: string;
-  description?: string;
-  publishedAt?: string;
-};
-
-// microCMSのリストレスポンス型（最小限）
-type ListResponse<T> = {
-  contents: T[];
-  totalCount: number;
-  offset: number;
-  limit: number;
-};
+export const dynamic = "force-dynamic";
 
 export default function MyCommentsPage() {
   const [uid, setUid] = useState<string | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Auth 監視
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (u?.uid !== uid) {
-        setUid(u?.uid ?? null);
-      }
+      setUid(u?.uid ?? null);
     });
     return () => unsub();
-  }, [uid]);
+  }, []);
 
-  // collectionGroup は useMemo で固定化
-  const commentsCg = useMemo(() => collectionGroup(db, "comments"), []);
-
-  // コメント取得
   useEffect(() => {
-    if (!uid) return; // ログインしてない時は何もしない
-
+    if (!uid) return;
+    if (typeof window === "undefined") return;
     setLoading(true);
 
     (async () => {
-      const q = query(commentsCg, where("userId", "==", uid));
-      const snap = await getDocs(q);
+      try {
+        const cg = collectionGroup(db, "comments");
+        const q = query(cg, where("userId", "==", uid));
+        const snap = await getDocs(q);
 
-      const ids = new Set<string>();
-      snap.forEach((doc) => {
-        const articleId = doc.ref.parent.parent?.id;
-        if (articleId) ids.add(articleId);
-      });
+        const ids = new Set<string>();
+        snap.forEach((doc) => {
+          const articleId = doc.ref.parent.parent?.id;
+          if (articleId) ids.add(articleId);
+        });
 
-      if (ids.size === 0) {
+        if (ids.size === 0) {
+          setArticles([]);
+          return;
+        }
+
+        const res = await fetch(
+          `/api/articles/byIds?ids=${Array.from(ids).join(",")}`
+        );
+        const data: { contents: Article[] } = await res.json();
+        setArticles(data.contents ?? []);
+      } catch (e) {
+        console.error(e);
         setArticles([]);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // microCMS から記事をまとめて取得
-      const res = await fetch(
-        `/api/articles/byIds?ids=${Array.from(ids).join(",")}`
-      );
-      if (!res.ok) {
-        setArticles([]);
-        setLoading(false);
-        return;
-      }
-      const data: ListResponse<Article> = await res.json(); // ← 型を付ける
-      setArticles(data.contents ?? []);
-      setLoading(false);
     })();
-  }, [uid, commentsCg]);
+  }, [uid]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">

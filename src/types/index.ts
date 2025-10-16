@@ -14,6 +14,14 @@ export type ListResponse<T> = {
   limit: number;
 };
 
+export type MCMSArticle = {
+  id: string;
+  title: string;
+  description?: string;
+  eyecatch?: MicroCMSImage;
+  publishedAt?: string;
+};
+
 // === Firestore / App用 ===
 export type Article = {
   id: string;

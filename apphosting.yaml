@@ -7,17 +7,58 @@ runConfig:
   # cpu: 1
   # memoryMiB: 512
 
-# Environment variables and secrets.
-# env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
-
   # Grant access to secrets in Cloud Secret Manager.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
+
+env:
+  # MICROCMS
+  - variable: MICROCMS_SERVICE_DOMAIN
+    value: gift-tech
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: MICROCMS_API_KEY
+    secret: microcmsApiKey
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # FIREBASE
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyBm3sY9kTr34_ou8gyQdiaFYnCWNjy6UrU"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "media-site-e5b34.firebaseapp.com"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "media-site-e5b34"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "media-site-e5b34.firebasestorage.app"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "1084864497411"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:1084864497411:web:f613985e7077755b4a8b36"
+    availability:
+      - BUILD
+      - RUNTIME

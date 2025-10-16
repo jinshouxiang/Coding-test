@@ -1,22 +1,7 @@
-// src/app/page.tsx
 import { client } from "@/lib/microcms";
 import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
-
-type MicroCMSImage = { url: string; width?: number; height?: number };
-type MCMSArticle = {
-  id: string;
-  title: string;
-  description?: string;
-  eyecatch?: MicroCMSImage;
-  publishedAt?: string;
-};
-type ListResponse<T> = {
-  contents: T[];
-  totalCount: number;
-  offset: number;
-  limit: number;
-};
+import { MCMSArticle, ListResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
 const PER_PAGE = 6;
@@ -55,8 +40,8 @@ export default async function Home({
               a.eyecatch
                 ? {
                     url: a.eyecatch.url,
-                    width: a.eyecatch.width ?? 1200, // デフォルト
-                    height: a.eyecatch.height ?? 630, // デフォルト
+                    width: a.eyecatch.width ?? 1200,
+                    height: a.eyecatch.height ?? 630,
                   }
                 : undefined
             }
@@ -65,7 +50,7 @@ export default async function Home({
         ))}
       </div>
 
-      <Pagination basePath="/" page={page} totalPages={totalPages} />
+      <Pagination basePath="/articles" page={page} totalPages={totalPages} />
     </main>
   );
 }
